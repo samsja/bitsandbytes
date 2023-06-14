@@ -10,7 +10,7 @@ from torch import Tensor, device, dtype, nn
 
 import bitsandbytes as bnb
 import bitsandbytes.functional
-from bitsandbytes.autograd._functions import get_inverse_transform_indices, undo_layout, memory_leak
+from bitsandbytes.autograd._functions import get_inverse_transform_indices, undo_layout
 from bitsandbytes.optim import GlobalOptimManager
 from bitsandbytes.utils import OutlierTracer, find_outlier_dims
 
@@ -333,14 +333,11 @@ class Linear8bitLt(nn.Linear):
         try:
 
             if reorder_layout:
-                a = torch.cuda.memory_allocated(0)
-
                 old_data = self.weight.data
                 self.weight.data = undo_layout(self.state.CxB, self.state.tile_indices)
                 del self.state.CxB
                 del old_data
-                b = torch.cuda.memory_allocated(0)
-                
+
             super()._save_to_state_dict(destination, prefix, keep_vars)
 
             # we only need to save SCB as extra data, because CB for quantized weights is already stored in weight.data
