@@ -99,7 +99,6 @@ def undo_layout(permuted_tensor: torch.Tensor, tile_indices: torch.LongTensor) -
     outputs = outputs.permute(3, 0, 2, 1)  # (rows // tile_rows, tile_rows), (cols // tile_cols, tile_cols)
     return outputs.reshape(rows, cols).contiguous()
 
-
 class MatMul8bit(torch.autograd.Function):
     @staticmethod
     def forward(ctx, A, B, out=None, quant_type="vector", precision=None):

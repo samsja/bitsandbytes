@@ -16,7 +16,6 @@ from bitsandbytes.utils import OutlierTracer, find_outlier_dims
 
 T = TypeVar("T", bound="torch.nn.Module")
 
-
 class StableEmbedding(torch.nn.Embedding):
     def __init__(
         self,
@@ -327,13 +326,17 @@ class Linear8bitLt(nn.Linear):
         if not self.state.has_fp16_weights and self.state.CB is None and self.state.CxB is not None:
             # reorder weight layout back from ampere/turing to row
             reorder_layout = True
-            weight_clone = self.weight.data.clone()
+            #weight_clone = self.weight.data.clone()
         else:
             reorder_layout = False
 
         try:
+
             if reorder_layout:
+                old_data = self.weight.data
                 self.weight.data = undo_layout(self.state.CxB, self.state.tile_indices)
+                del self.state.CxB
+                del old_data
 
             super()._save_to_state_dict(destination, prefix, keep_vars)
 
@@ -351,8 +354,11 @@ class Linear8bitLt(nn.Linear):
             elif not self.state.has_fp16_weights and param_from_state is not None:
                 destination[key_name] = param_from_state if keep_vars else param_from_state.detach()
         finally:
-            if reorder_layout:
-                self.weight.data = weight_clone
+            pass
+            #if reorder_layout:
+                #self.weight.data = weight_clone
+
+
 
     def _load_from_state_dict(self, state_dict, prefix, local_metadata, strict,
                               missing_keys, unexpected_keys, error_msgs):
