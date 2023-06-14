@@ -16,8 +16,6 @@ from bitsandbytes.utils import OutlierTracer, find_outlier_dims
 
 T = TypeVar("T", bound="torch.nn.Module")
 
-i = 0
-
 class StableEmbedding(torch.nn.Embedding):
     def __init__(
         self,
@@ -342,10 +340,7 @@ class Linear8bitLt(nn.Linear):
                 del self.state.CxB
                 del old_data
                 b = torch.cuda.memory_allocated(0)
-
-                global i
-                print(f"Layer {i} : prefix {prefix}: shape {self.in_features} x {self.out_features} : memory leak: {(b - a) / 2 ** 18} ")
-                i = i + 1
+                
             super()._save_to_state_dict(destination, prefix, keep_vars)
 
             # we only need to save SCB as extra data, because CB for quantized weights is already stored in weight.data
